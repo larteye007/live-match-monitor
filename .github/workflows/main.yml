@@ -1,38 +1,46 @@
-
 name: Build Android APK
-
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
+workflow_dispatch:
+push:
+branches:
+- main
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get project files
-        uses: actions/checkout@v4
+build:
+runs-on: ubuntu-latest
+steps:
+- name: Get project files
+uses: actions/checkout@v4
+  - name: Install Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
 
-      - name: Install Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+  - name: Set up Gradle
+    uses: gradle/actions/setup-gradle@v4
+    with:
+      gradle-version: '8.9'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+  - name: Extract Android project
+    run: unzip -o LiveMatchMonitorAndroid.zip -d source
 
-      - name: Extract Android project
-        run: unzip -o LiveMatchMonitorAndroid.zip -d source
+  - name: Allow experimental Material 3 API
+    run: |
+      python3 - <<'PY'
+      from pathlib import Path
+      p = Path("source/app/src/main/java/com/example/livematchmonitor/MainActivity.kt")
+      s = p.read_text()
+      annotation = "@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)"
+      if annotation not in s:
+          p.write_text(annotation + "\n" + s)
+      PY
 
-      - name: Build APK
-        run: gradle -p source assembleDebug -Pkotlin.jvm.target.validation.mode=warning
+  - name: Build APK
+    run: gradle -p source assembleDebug -Pkotlin.jvm.target.validation.mode=warning
 
-      - name: Save APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: LiveMatchMonitor-APK
-          path: source/app/build/outputs/apk/debug/app-debug.apk
+  - name: Save APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: LiveMatchMonitor-APK
+      path: source/app/build/outputs/apk/debug/app-debug.apk
+
