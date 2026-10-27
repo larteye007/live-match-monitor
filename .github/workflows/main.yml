@@ -25,7 +25,7 @@ jobs:
           gradle-version: '8.9'
 
       - name: Extract Android project
-        run: unzip -o LiveMatchMonitorAndroid.zip -d source
+        run:  unzip -o LiveMatchMonitorAndroid_fixed_source.zip -d source
 
       - name: Allow experimental Material 3 API
         run: |
