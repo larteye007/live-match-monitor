@@ -38,7 +38,7 @@ jobs:
               p.write_text(annotation + "\n" + s)
           PY
 
-      - name: Build APK
+      - name: Save APK
         run: gradle -p source assembleDebug -Pkotlin.jvm.target.validation.mode=warning
 
       - name: Save APK
